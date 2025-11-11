@@ -1,17 +1,46 @@
-﻿{
-  "name": "form-fill-backend",
-  "version": "0.1.0",
-  "private": true,
-  "type": "commonjs",
+{
+  "name": "excel-mongodb-api",
+  "version": "1.0.0",
+  "description": "Backend API for Excel to MongoDB with search and authentication",
+  "type": "module",
+  "main": "dist/server.js",
   "scripts": {
-    "start": "node server.js",
-    "dev": "nodemon server.js"
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc",
+    "start": "node dist/server.js",
+    "lint": "eslint src --ext .ts",
+    "generate-test-data": "node scripts/generateTestData.js"
   },
+  "keywords": [
+    "express",
+    "mongodb",
+    "excel",
+    "api"
+  ],
+  "author": "",
+  "license": "MIT",
   "dependencies": {
+    "express": "^4.18.2",
+    "mongoose": "^8.0.0",
+    "multer": "^2.0.0-rc.4",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.3/xlsx-0.20.3.tgz",
+    "dotenv": "^16.3.1",
+    "helmet": "^7.1.0",
     "cors": "^2.8.5",
-    "express": "^4.19.2"
+    "express-rate-limit": "^7.1.5",
+    "express-mongo-sanitize": "^2.2.0",
+    "jsonwebtoken": "^9.0.2",
+    "express-validator": "^7.0.1",
+    "bcryptjs": "^2.4.3"
   },
   "devDependencies": {
-    "nodemon": "^3.1.0"
+    "@types/express": "^4.17.21",
+    "@types/multer": "^2.0.0",
+    "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.5",
+    "@types/bcryptjs": "^2.4.6",
+    "@types/node": "^20.10.0",
+    "typescript": "^5.3.3",
+    "tsx": "^4.7.0"
   }
 }
