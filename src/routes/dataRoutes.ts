@@ -1,0 +1,26 @@
+import express from "express";
+import {
+  searchByName,
+  searchByField,
+  getAllData,
+  getStats,
+  getCollections,
+  getRecordById,
+} from "../controllers/dataController.js";
+import { searchValidation } from "../middleware/validation.js";
+import { validateApiKey } from "../middleware/auth.js";
+
+const router = express.Router();
+
+router.get("/search", validateApiKey, searchValidation, searchByName);
+
+router.get("/search/:field", validateApiKey, searchValidation, searchByField);
+
+router.get("/data", validateApiKey, searchValidation, getAllData);
+
+router.get("/stats", validateApiKey, getStats);
+router.get("/collections", validateApiKey, getCollections);
+
+router.get("/fetch-with-account/:id", getRecordById);
+
+export default router;
