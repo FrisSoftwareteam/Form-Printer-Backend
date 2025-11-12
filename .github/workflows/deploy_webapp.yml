@@ -7,7 +7,6 @@ on:
 
 env:
   NODE_VERSION: "20.x"
-  NODE_ENV: production
 
 jobs:
   build:
