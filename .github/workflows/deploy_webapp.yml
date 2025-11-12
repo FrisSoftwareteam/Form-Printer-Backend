@@ -19,7 +19,7 @@ node-version: ${{ env.NODE_VERSION }}
 - name: Prepare runtime package
 run: |
 mkdir -p deploy
-cp -r dist package.json package-lock.json deploy/
+cp -r dist package.json package-lock.json .deployment deploy/
 cd deploy
 npm ci --omit=dev
 zip -r ../release.zip .
