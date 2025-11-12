@@ -44,3 +44,4 @@ with:
 app-name: Form-Print-Backend
 package: package
 publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
+
