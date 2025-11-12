@@ -2,7 +2,6 @@ import jwt from "jsonwebtoken";
 export const protect = async (req, res, next) => {
     try {
         let token;
-        // Check for Bearer token in Authorization header
         if (req.headers.authorization?.startsWith("Bearer")) {
             token = req.headers.authorization.split(" ")[1];
         }
@@ -13,7 +12,6 @@ export const protect = async (req, res, next) => {
             });
             return;
         }
-        // Verify token
         const decoded = jwt.verify(token, process.env.JWT_SECRET || "secret");
         req.user = decoded;
         next();
@@ -25,7 +23,6 @@ export const protect = async (req, res, next) => {
         });
     }
 };
-// API Key validation middleware
 export const validateApiKey = (req, res, next) => {
     const apiKey = req.headers["x-api-key"];
     if (!apiKey || apiKey !== process.env.API_KEY) {

@@ -1,13 +1,9 @@
 import mongoose from "mongoose";
 import UploadMetadata from "../models/UploadMetadata.js";
 import PrescoData from "../models/PrescoData.js";
-/**
- * Search across multiple fields: name, email, mobile_no, account_number
- * GET /api/search?query=John
- */
 export const searchByName = async (req, res) => {
     try {
-        const { query, collection } = req.query;
+        const { query } = req.query;
         if (!query) {
             res.status(400).json({
                 success: false,
@@ -16,50 +12,30 @@ export const searchByName = async (req, res) => {
             return;
         }
         const searchTerm = query;
-        // Use prescodatas collection by default
-        const collectionName = collection || "prescodatas";
-        // Use PrescoData model for prescodatas collection
-        if (collectionName === "prescodatas") {
-            // Build search query for multiple fields
-            const searchQuery = {
-                $or: [
-                    { name: { $regex: searchTerm, $options: "i" } },
-                    { email: { $regex: searchTerm, $options: "i" } },
-                    { mobile_no: { $regex: searchTerm, $options: "i" } },
-                ],
-            };
-            // If search term is numeric, also search account_number
-            if (!isNaN(Number(searchTerm))) {
-                searchQuery.$or.push({ account_number: Number(searchTerm) });
-            }
-            const results = await PrescoData.find(searchQuery).lean();
-            res.json({
-                success: true,
-                data: results,
-                count: results.length,
-            });
-            return;
-        }
-        // Fallback to dynamic model for other collections
-        const Model = mongoose.models[collectionName];
-        if (!Model) {
-            res.status(404).json({
-                success: false,
-                error: `Collection '${collectionName}' not found`,
-            });
-            return;
-        }
-        const nameFields = Object.keys(Model.schema.paths).filter((key) => key.toLowerCase().includes("name"));
         const searchQuery = {
-            $or: nameFields.map((field) => ({
-                [field]: { $regex: searchTerm, $options: "i" },
-            })),
+            $or: [
+                { name: { $regex: searchTerm, $options: "i" } },
+                { email: { $regex: searchTerm, $options: "i" } },
+                { mobile_no: { $regex: searchTerm, $options: "i" } },
+            ],
         };
-        const results = await Model.find(searchQuery).lean();
+        if (!isNaN(Number(searchTerm))) {
+            searchQuery.$or.push({ account_number: Number(searchTerm) });
+        }
+        const results = await PrescoData.find(searchQuery).lean();
+        const transformedResults = results.map((item) => ({
+            id: item.s_no,
+            accountNumber: item.account_number?.toString(),
+            names: item.name,
+            address: item.address,
+            unitsHeld: item.units_held?.toString(),
+            rightDue: item.rights_due?.toString(),
+            amountPayable: item.amount?.toString(),
+            mobile: item.mobile_no || null,
+            emailAddress: item.email || null,
+        }));
         res.json({
-            success: true,
-            data: results,
-            count: results.length,
+            data: transformedResults,
         });
     }
     catch (error) {
@@ -70,10 +46,6 @@ export const searchByName = async (req, res) => {
         });
     }
 };
-/**
- * Search by specific field
- * GET /api/search/:field?value=test
- */
 export const searchByField = async (req, res) => {
     try {
         const { field } = req.params;
@@ -87,7 +59,6 @@ export const searchByField = async (req, res) => {
         }
         const searchValue = value;
         const collectionName = collection || "prescodatas";
-        // Use PrescoData model for prescodatas collection
         if (collectionName === "prescodatas") {
             const validFields = [
                 "name",
@@ -108,7 +79,6 @@ export const searchByField = async (req, res) => {
                 return;
             }
             let searchQuery;
-            // Handle numeric fields
             if ([
                 "account_number",
                 "s_no",
@@ -122,14 +92,22 @@ export const searchByField = async (req, res) => {
                 searchQuery = { [field]: { $regex: searchValue, $options: "i" } };
             }
             const results = await PrescoData.find(searchQuery).lean();
+            const transformedResults = results.map((item) => ({
+                id: item.s_no,
+                accountNumber: item.account_number?.toString(),
+                names: item.name,
+                address: item.address,
+                unitsHeld: item.units_held?.toString(),
+                rightDue: item.rights_due?.toString(),
+                amountPayable: item.amount?.toString(),
+                mobile: item.mobile_no || null,
+                emailAddress: item.email || null,
+            }));
             res.json({
-                success: true,
-                data: results,
-                count: results.length,
+                data: transformedResults,
             });
             return;
         }
-        // Fallback to dynamic model for other collections
         const Model = mongoose.models[collectionName];
         if (!Model) {
             res.status(404).json({
@@ -163,15 +141,10 @@ export const searchByField = async (req, res) => {
         });
     }
 };
-/**
- * Get all data without pagination
- * GET /api/data?collection=prescodatas
- */
 export const getAllData = async (req, res) => {
     try {
         const { collection } = req.query;
         const collectionName = collection || "prescodatas";
-        // Use PrescoData model for prescodatas collection
         if (collectionName === "prescodatas") {
             const results = await PrescoData.find({}).lean();
             res.json({
@@ -181,7 +154,6 @@ export const getAllData = async (req, res) => {
             });
             return;
         }
-        // Fallback to dynamic model for other collections
         const Model = mongoose.models[collectionName];
         if (!Model) {
             res.status(404).json({
@@ -205,10 +177,6 @@ export const getAllData = async (req, res) => {
         });
     }
 };
-/**
- * Get statistics about uploaded collections
- * GET /api/stats
- */
 export const getStats = async (req, res) => {
     try {
         const { collection } = req.query;
@@ -246,10 +214,6 @@ export const getStats = async (req, res) => {
         });
     }
 };
-/**
- * Get list of all collections
- * GET /api/collections
- */
 export const getCollections = async (req, res) => {
     try {
         const collections = await UploadMetadata.find({}).sort({ uploadedAt: -1 });
@@ -271,10 +235,6 @@ export const getCollections = async (req, res) => {
         });
     }
 };
-/**
- * Get single record by account_number
- * GET /api/fetch-with-account/:id
- */
 export const getRecordById = async (req, res) => {
     try {
         const { id } = req.params;
@@ -287,7 +247,6 @@ export const getRecordById = async (req, res) => {
             return;
         }
         const collectionName = collection || "prescodatas";
-        // Use PrescoData model for prescodatas collection
         if (collectionName === "prescodatas") {
             const result = await PrescoData.findOne({
                 account_number: Number(id),
@@ -299,13 +258,23 @@ export const getRecordById = async (req, res) => {
                 });
                 return;
             }
+            const mappedData = {
+                id: result.s_no,
+                accountNumber: result.account_number?.toString(),
+                names: result.name,
+                address: result.address,
+                unitsHeld: result.units_held?.toString(),
+                rightDue: result.rights_due?.toString(),
+                amountPayable: result.amount?.toString(),
+                mobile: result.mobile_no,
+                emailAddress: result.email,
+            };
             res.json({
                 success: true,
-                data: result,
+                data: mappedData,
             });
             return;
         }
-        // Fallback to dynamic model for other collections
         const Model = mongoose.models[collectionName];
         if (!Model) {
             res.status(404).json({
@@ -329,9 +298,20 @@ export const getRecordById = async (req, res) => {
             });
             return;
         }
+        const mappedData = {
+            id: result.s_no,
+            accountNumber: result.account_number?.toString(),
+            names: result.name,
+            address: result.address,
+            unitsHeld: result.units_held?.toString(),
+            rightDue: result.rights_due?.toString(),
+            amountPayable: result.amount?.toString(),
+            mobile: result.mobile_no,
+            emailAddress: result.email,
+        };
         res.json({
-            success: true,
-            data: result,
+            // success: true,
+            data: mappedData,
         });
     }
     catch (error) {
