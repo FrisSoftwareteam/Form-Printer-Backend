@@ -7,7 +7,7 @@ import { connectDB } from "./config/database.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 import { rateLimiter } from "./middleware/rateLimiter.js";
 import authRoutes from "./routes/authRoutes.js";
-import uploadRoutes from "./routes/uploadRoutes.js";
+// import uploadRoutes from "./routes/uploadRoutes.js";
 import dataRoutes from "./routes/dataRoutes.js";
 
 dotenv.config();
@@ -36,7 +36,7 @@ app.get("/health", (req, res) => {
 });
 
 app.use("/api/auth", authRoutes);
-app.use("/api", uploadRoutes);
+// app.use("/api", uploadRoutes);
 app.use("/api", dataRoutes);
 
 app.use(errorHandler);
