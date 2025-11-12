@@ -25,7 +25,7 @@ jobs:
       - name: Prepare runtime package
         run: |
           mkdir -p deploy
-          cp -r dist package.json package-lock.json .env deploy/
+          cp -r dist package.json package-lock.json deploy/
           cd deploy
           npm ci --omit=dev
           zip -r ../release.zip .
